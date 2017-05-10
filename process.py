@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 import json
 import requests_cache
@@ -54,7 +55,7 @@ def splitSearchTerm(searchTerm):
 def runSearch(query):
     searchUrl = "https://www.googleapis.com/customsearch/v1?q="
     cx = "&cx=013182954640320586502:2ru_2p3uep4"
-    key = ""
+    key = "&key=AIzaSyBfyhDRE9PPka6Rc4X4QQCS91L2X-_UIJg"
     result = requests.get(searchUrl + query + key + cx)
     return result
 
@@ -151,16 +152,28 @@ def getRelevanceCounts(textBlob):
     l = ['law', 'bill', 'regulation', 'congress']
     relevanceCount = 0
     for words in textBlob:
-       if l in words:
+        words = preprocess(words)
+        if words in l:
            relevanceCount += 1
     return relevanceCount
+
+'''
+@param string
+'''
+def preprocess(str_in):
+    b = ""
+    for a in str_in.split():
+        lower = a.lower()
+        lower = re.sub(r"[^\w\s]", '', lower)
+        b += lower + " "
+    return b
 
 '''
 @TODO: finish the driver
 @ driver to run the program
 '''
 def run():
-    df = readFile('lobby.csv')
+    df = readFile('minilobby.csv')
     #df = df.head()
     df['api'] = df['Client'].apply(getGoogleResponses)
     df['link'] = df['api'].apply(getApiLink)
